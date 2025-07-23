@@ -1,0 +1,43 @@
+[gd_scene load_steps=4 format=3 uid="uid://c8kqhpixj5qv"]
+
+[ext_resource type="Script" path="res://scripts/entities/NPC.gd" id="1_lfmqj"]
+[ext_resource type="Texture2D" uid="uid://c8kqhpixj5qv" path="res://assets/sprites/npcs/old_man.png" id="2_lfmqj"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lfmqj"]
+extents = Vector2(24, 24)
+
+[node name="NPC" type="Area2D"]
+script = ExtResource("1_lfmqj")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_lfmqj")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_lfmqj")
+
+[node name="DialogPanel" type="Panel" parent="."]
+visible = false
+offset_left = -150.0
+offset_top = -150.0
+offset_right = 150.0
+offset_bottom = -50.0
+
+[node name="Name" type="Label" parent="DialogPanel"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 290.0
+offset_bottom = 30.0
+text = "老人"
+horizontal_alignment = 1
+
+[node name="Message" type="Label" parent="DialogPanel"]
+offset_left = 10.0
+offset_top = 30.0
+offset_right = 290.0
+offset_bottom = 100.0
+text = "欢迎来到魔塔，勇者！你需要收集钥匙，打败怪物，最终到达塔顶。"
+wrap_mode = 1
+
+[connection signal="input_event" from="." to="." method="_on_input_event"]
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

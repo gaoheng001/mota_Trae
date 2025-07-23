@@ -1,0 +1,43 @@
+{
+  "id": "orc",
+  "name": "兽人",
+  "description": "强壮的兽人战士，攻防均衡。",
+  "health": 120,
+  "attack": 35,
+  "defense": 15,
+  "gold": 15,
+  "exp": 15,
+  "level": 3,
+  "sprite": "res://assets/images/characters/enemies/orc.png",
+  "special_abilities": ["rage"],
+  "drop_items": [
+    {
+      "item_id": "medium_potion",
+      "chance": 0.3
+    },
+    {
+      "item_id": "iron_sword",
+      "chance": 0.1
+    }
+  ],
+  "battle_background": "forest",
+  "battle_music": "battle_normal",
+  "battle_animations": {
+    "attack": "orc_attack",
+    "hurt": "orc_hurt",
+    "death": "orc_death"
+  },
+  "dialog": {
+    "encounter": "一个兽人挥舞着武器冲了过来！",
+    "victory": "兽人倒下了！",
+    "escape": "兽人退却了！"
+  },
+  "special_effects": {
+    "rage": {
+      "trigger": "health_below_30_percent",
+      "effect": "increase_attack",
+      "value": 10,
+      "message": "兽人进入了狂暴状态！"
+    }
+  }
+}

@@ -1,0 +1,207 @@
+[gd_scene load_steps=6 format=3 uid="uid://c8kqhpixj5qv"]
+
+[ext_resource type="Script" path="res://scripts/ui/StatusBar.gd" id="1_lfmqj"]
+[ext_resource type="Texture2D" uid="uid://c8kqhpixj5qv" path="res://assets/sprites/ui/heart.png" id="2_lfmqj"]
+[ext_resource type="Texture2D" uid="uid://c8kqhpixj5qv" path="res://assets/sprites/ui/sword.png" id="3_lfmqj"]
+[ext_resource type="Texture2D" uid="uid://c8kqhpixj5qv" path="res://assets/sprites/ui/shield.png" id="4_lfmqj"]
+[ext_resource type="Texture2D" uid="uid://c8kqhpixj5qv" path="res://assets/sprites/items/yellow_key.png" id="5_lfmqj"]
+
+[node name="StatusBar" type="Control"]
+anchor_right = 1.0
+offset_bottom = 60.0
+script = ExtResource("1_lfmqj")
+
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+offset_bottom = 60.0
+color = Color(0.2, 0.2, 0.2, 0.8)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+anchor_right = 1.0
+offset_bottom = 60.0
+theme_override_constants/separation = 20
+
+[node name="Floor" type="Label" parent="HBoxContainer"]
+offset_top = 17.0
+offset_right = 80.0
+offset_bottom = 43.0
+text = "第1层"
+
+[node name="Health" type="HBoxContainer" parent="HBoxContainer"]
+offset_left = 100.0
+offset_right = 250.0
+offset_bottom = 60.0
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer/Health"]
+offset_right = 40.0
+offset_bottom = 60.0
+minimum_size = Vector2(40, 40)
+texture = ExtResource("2_lfmqj")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="HBoxContainer/Health"]
+offset_left = 44.0
+offset_top = 17.0
+offset_right = 150.0
+offset_bottom = 43.0
+text = "1000/1000"
+
+[node name="Attack" type="HBoxContainer" parent="HBoxContainer"]
+offset_left = 270.0
+offset_right = 370.0
+offset_bottom = 60.0
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer/Attack"]
+offset_right = 40.0
+offset_bottom = 60.0
+minimum_size = Vector2(40, 40)
+texture = ExtResource("3_lfmqj")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="HBoxContainer/Attack"]
+offset_left = 44.0
+offset_top = 17.0
+offset_right = 100.0
+offset_bottom = 43.0
+text = "10"
+
+[node name="Defense" type="HBoxContainer" parent="HBoxContainer"]
+offset_left = 390.0
+offset_right = 490.0
+offset_bottom = 60.0
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer/Defense"]
+offset_right = 40.0
+offset_bottom = 60.0
+minimum_size = Vector2(40, 40)
+texture = ExtResource("4_lfmqj")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="HBoxContainer/Defense"]
+offset_left = 44.0
+offset_top = 17.0
+offset_right = 100.0
+offset_bottom = 43.0
+text = "10"
+
+[node name="YellowKey" type="HBoxContainer" parent="HBoxContainer"]
+offset_left = 510.0
+offset_right = 590.0
+offset_bottom = 60.0
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer/YellowKey"]
+offset_right = 40.0
+offset_bottom = 60.0
+minimum_size = Vector2(40, 40)
+texture = ExtResource("5_lfmqj")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Value" type="Label" parent="HBoxContainer/YellowKey"]
+offset_left = 44.0
+offset_top = 17.0
+offset_right = 80.0
+offset_bottom = 43.0
+text = "0"
+
+[node name="BlueKey" type="HBoxContainer" parent="HBoxContainer"]
+offset_left = 610.0
+offset_right = 690.0
+offset_bottom = 60.0
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer/BlueKey"]
+offset_right = 40.0
+offset_bottom = 60.0
+minimum_size = Vector2(40, 40)
+texture = ExtResource("5_lfmqj")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(0.2, 0.4, 1.0, 1.0)
+
+[node name="Value" type="Label" parent="HBoxContainer/BlueKey"]
+offset_left = 44.0
+offset_top = 17.0
+offset_right = 80.0
+offset_bottom = 43.0
+text = "0"
+
+[node name="RedKey" type="HBoxContainer" parent="HBoxContainer"]
+offset_left = 710.0
+offset_right = 790.0
+offset_bottom = 60.0
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer/RedKey"]
+offset_right = 40.0
+offset_bottom = 60.0
+minimum_size = Vector2(40, 40)
+texture = ExtResource("5_lfmqj")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(1.0, 0.2, 0.2, 1.0)
+
+[node name="Value" type="Label" parent="HBoxContainer/RedKey"]
+offset_left = 44.0
+offset_top = 17.0
+offset_right = 80.0
+offset_bottom = 43.0
+text = "0"
+
+[node name="Gold" type="HBoxContainer" parent="HBoxContainer"]
+offset_left = 810.0
+offset_right = 890.0
+offset_bottom = 60.0
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer/Gold"]
+offset_right = 40.0
+offset_bottom = 60.0
+minimum_size = Vector2(40, 40)
+texture = ExtResource("5_lfmqj")
+expand_mode = 1
+stretch_mode = 5
+modulate = Color(1.0, 0.84, 0.0, 1.0)
+
+[node name="Value" type="Label" parent="HBoxContainer/Gold"]
+offset_left = 44.0
+offset_top = 17.0
+offset_right = 80.0
+offset_bottom = 43.0
+text = "0"
+
+[node name="Experience" type="HBoxContainer" parent="HBoxContainer"]
+offset_left = 910.0
+offset_right = 1010.0
+offset_bottom = 60.0
+
+[node name="Label" type="Label" parent="HBoxContainer/Experience"]
+offset_top = 17.0
+offset_right = 60.0
+offset_bottom = 43.0
+text = "经验:"
+
+[node name="Value" type="Label" parent="HBoxContainer/Experience"]
+offset_left = 64.0
+offset_top = 17.0
+offset_right = 100.0
+offset_bottom = 43.0
+text = "0"
+
+[node name="Level" type="HBoxContainer" parent="HBoxContainer"]
+offset_left = 1030.0
+offset_right = 1130.0
+offset_bottom = 60.0
+
+[node name="Label" type="Label" parent="HBoxContainer/Level"]
+offset_top = 17.0
+offset_right = 60.0
+offset_bottom = 43.0
+text = "等级:"
+
+[node name="Value" type="Label" parent="HBoxContainer/Level"]
+offset_left = 64.0
+offset_top = 17.0
+offset_right = 100.0
+offset_bottom = 43.0
+text = "1"

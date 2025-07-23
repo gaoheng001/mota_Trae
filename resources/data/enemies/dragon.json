@@ -1,0 +1,67 @@
+{
+  "id": "dragon",
+  "name": "巨龙",
+  "description": "强大的巨龙，塔内最危险的生物之一。",
+  "health": 500,
+  "attack": 80,
+  "defense": 40,
+  "gold": 100,
+  "exp": 100,
+  "level": 10,
+  "is_boss": true,
+  "sprite": "res://assets/images/characters/enemies/dragon.png",
+  "special_abilities": ["fire_breath", "tough_scales", "flying"],
+  "drop_items": [
+    {
+      "item_id": "large_potion",
+      "chance": 1.0
+    },
+    {
+      "item_id": "dragon_scale",
+      "chance": 0.8
+    },
+    {
+      "item_id": "dragon_fang",
+      "chance": 0.5
+    }
+  ],
+  "battle_background": "dragon_lair",
+  "battle_music": "battle_boss",
+  "battle_animations": {
+    "attack": "dragon_attack",
+    "special": "dragon_breath",
+    "hurt": "dragon_hurt",
+    "death": "dragon_death"
+  },
+  "dialog": {
+    "encounter": "一条巨龙挡住了去路！地面在它的咆哮下颤抖！",
+    "victory": "巨龙倒下了！你成功击败了这个强大的敌人！",
+    "escape": "巨龙似乎暂时失去了兴趣，飞走了。"
+  },
+  "special_effects": {
+    "fire_breath": {
+      "trigger": "turn_count_multiple_3",
+      "effect": "area_damage",
+      "value": 50,
+      "ignore_defense": true,
+      "message": "巨龙喷出一道烈焰！"
+    },
+    "tough_scales": {
+      "trigger": "always",
+      "effect": "reduce_damage",
+      "value": 0.2,
+      "message": "巨龙的鳞片减弱了攻击！"
+    },
+    "rage": {
+      "trigger": "health_below_30_percent",
+      "effect": "increase_attack",
+      "value": 20,
+      "message": "巨龙进入了狂暴状态！"
+    }
+  },
+  "defeat_event": {
+    "unlock_floor": 11,
+    "dialog_id": "dragon_defeated",
+    "achievement": "dragon_slayer"
+  }
+}

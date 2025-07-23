@@ -1,0 +1,31 @@
+{
+  "id": "bat",
+  "name": "蝙蝠",
+  "description": "飞行的小型敌人，攻击力较高但防御力较低。",
+  "health": 35,
+  "attack": 20,
+  "defense": 1,
+  "gold": 6,
+  "exp": 6,
+  "level": 1,
+  "sprite": "res://assets/images/characters/enemies/bat.png",
+  "special_abilities": ["flying"],
+  "drop_items": [
+    {
+      "item_id": "small_potion",
+      "chance": 0.2
+    }
+  ],
+  "battle_background": "cave",
+  "battle_music": "battle_normal",
+  "battle_animations": {
+    "attack": "bat_attack",
+    "hurt": "bat_hurt",
+    "death": "bat_death"
+  },
+  "dialog": {
+    "encounter": "一只蝙蝠飞了过来！",
+    "victory": "蝙蝠被击败了！",
+    "escape": "蝙蝠飞走了！"
+  }
+}

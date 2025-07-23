@@ -1,0 +1,23 @@
+{
+  "id": "medium_potion",
+  "name": "中型药水",
+  "description": "恢复中等量的生命值。",
+  "type": "consumable",
+  "sprite": "res://assets/images/items/medium_potion.png",
+  "value": 25,
+  "effects": [
+    {
+      "type": "heal",
+      "value": 150,
+      "message": "恢复了150点生命值！"
+    }
+  ],
+  "use_sound": "potion_use",
+  "pickup_sound": "item_pickup",
+  "rarity": "uncommon",
+  "stackable": true,
+  "max_stack": 99,
+  "use_animation": "heal_effect",
+  "shop_price": 50,
+  "sell_price": 15
+}

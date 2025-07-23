@@ -1,0 +1,49 @@
+{
+  "id": "ghost",
+  "name": "幽灵",
+  "description": "虚无缥缈的亡灵，物理攻击难以伤害它。",
+  "health": 80,
+  "attack": 30,
+  "defense": 5,
+  "gold": 12,
+  "exp": 12,
+  "level": 3,
+  "sprite": "res://assets/images/characters/enemies/ghost.png",
+  "special_abilities": ["undead", "ethereal", "immune_to_physical"],
+  "drop_items": [
+    {
+      "item_id": "ectoplasm",
+      "chance": 0.6
+    },
+    {
+      "item_id": "blue_key",
+      "chance": 0.2
+    }
+  ],
+  "battle_background": "haunted",
+  "battle_music": "battle_eerie",
+  "battle_animations": {
+    "attack": "ghost_attack",
+    "hurt": "ghost_hurt",
+    "death": "ghost_death"
+  },
+  "dialog": {
+    "encounter": "一个幽灵从墙壁中浮现！",
+    "victory": "幽灵消散了！",
+    "escape": "幽灵穿墙而过，消失了！"
+  },
+  "special_effects": {
+    "ethereal": {
+      "trigger": "always",
+      "effect": "reduce_damage",
+      "value": 0.5,
+      "message": "物理攻击对幽灵的伤害减半！"
+    },
+    "fear": {
+      "trigger": "random",
+      "chance": 0.2,
+      "effect": "skip_turn",
+      "message": "你被幽灵吓到了，无法行动！"
+    }
+  }
+}

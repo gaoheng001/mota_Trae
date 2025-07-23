@@ -1,0 +1,31 @@
+{
+  "id": "slime",
+  "name": "史莱姆",
+  "description": "最基础的敌人，弱小但数量众多。",
+  "health": 50,
+  "attack": 15,
+  "defense": 2,
+  "gold": 5,
+  "exp": 5,
+  "level": 1,
+  "sprite": "res://assets/images/characters/enemies/slime.png",
+  "special_abilities": [],
+  "drop_items": [
+    {
+      "item_id": "small_potion",
+      "chance": 0.3
+    }
+  ],
+  "battle_background": "forest",
+  "battle_music": "battle_normal",
+  "battle_animations": {
+    "attack": "slime_attack",
+    "hurt": "slime_hurt",
+    "death": "slime_death"
+  },
+  "dialog": {
+    "encounter": "一只史莱姆出现了！",
+    "victory": "史莱姆被击败了！",
+    "escape": "史莱姆逃跑了！"
+  }
+}

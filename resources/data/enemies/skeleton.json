@@ -1,0 +1,35 @@
+{
+  "id": "skeleton",
+  "name": "骷髅",
+  "description": "亡灵生物，拥有较高的防御力。",
+  "health": 70,
+  "attack": 25,
+  "defense": 10,
+  "gold": 10,
+  "exp": 10,
+  "level": 2,
+  "sprite": "res://assets/images/characters/enemies/skeleton.png",
+  "special_abilities": ["undead", "resistant_to_physical"],
+  "drop_items": [
+    {
+      "item_id": "medium_potion",
+      "chance": 0.2
+    },
+    {
+      "item_id": "bone_fragment",
+      "chance": 0.5
+    }
+  ],
+  "battle_background": "dungeon",
+  "battle_music": "battle_normal",
+  "battle_animations": {
+    "attack": "skeleton_attack",
+    "hurt": "skeleton_hurt",
+    "death": "skeleton_death"
+  },
+  "dialog": {
+    "encounter": "一个骷髅挡住了去路！",
+    "victory": "骷髅倒下了！",
+    "escape": "骷髅退回了黑暗中！"
+  }
+}

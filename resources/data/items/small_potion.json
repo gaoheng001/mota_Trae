@@ -1,0 +1,23 @@
+{
+  "id": "small_potion",
+  "name": "小型药水",
+  "description": "恢复少量生命值。",
+  "type": "consumable",
+  "sprite": "res://assets/images/items/small_potion.png",
+  "value": 10,
+  "effects": [
+    {
+      "type": "heal",
+      "value": 50,
+      "message": "恢复了50点生命值！"
+    }
+  ],
+  "use_sound": "potion_use",
+  "pickup_sound": "item_pickup",
+  "rarity": "common",
+  "stackable": true,
+  "max_stack": 99,
+  "use_animation": "heal_effect",
+  "shop_price": 20,
+  "sell_price": 5
+}

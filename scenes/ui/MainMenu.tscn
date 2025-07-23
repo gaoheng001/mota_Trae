@@ -1,0 +1,217 @@
+[gd_scene load_steps=3 format=3 uid="uid://bqnhsf8x4o5c6"]
+
+[ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="1_8ykpj"]
+[ext_resource type="FontFile" uid="uid://c8kqhpixj5qv" path="res://assets/fonts/default_font.tres" id="2_yjkl4"]
+
+[node name="MainMenu" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_8ykpj")
+
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.2, 0.2, 0.2, 1.0)
+
+[node name="Title" type="Label" parent="."]
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 100.0
+offset_right = 200.0
+offset_bottom = 180.0
+theme_override_fonts/font = ExtResource("2_yjkl4")
+theme_override_font_sizes/font_size = 64
+text = "魔塔游戏"
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -80.0
+offset_right = 100.0
+offset_bottom = 120.0
+theme_override_constants/separation = 20
+
+[node name="StartButton" type="Button" parent="VBoxContainer"]
+offset_right = 200.0
+offset_bottom = 40.0
+theme_override_fonts/font = ExtResource("2_yjkl4")
+theme_override_font_sizes/font_size = 24
+text = "开始新游戏"
+
+[node name="LoadButton" type="Button" parent="VBoxContainer"]
+offset_top = 60.0
+offset_right = 200.0
+offset_bottom = 100.0
+theme_override_fonts/font = ExtResource("2_yjkl4")
+theme_override_font_sizes/font_size = 24
+text = "加载游戏"
+
+[node name="SettingsButton" type="Button" parent="VBoxContainer"]
+offset_top = 120.0
+offset_right = 200.0
+offset_bottom = 160.0
+theme_override_fonts/font = ExtResource("2_yjkl4")
+theme_override_font_sizes/font_size = 24
+text = "设置"
+
+[node name="ExitButton" type="Button" parent="VBoxContainer"]
+offset_top = 180.0
+offset_right = 200.0
+offset_bottom = 220.0
+theme_override_fonts/font = ExtResource("2_yjkl4")
+theme_override_font_sizes/font_size = 24
+text = "退出"
+
+[node name="Version" type="Label" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -40.0
+offset_right = 200.0
+offset_bottom = -20.0
+theme_override_fonts/font = ExtResource("2_yjkl4")
+theme_override_font_sizes/font_size = 16
+text = "版本: 1.0.0"
+
+[node name="LoadGamePanel" type="Panel" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+
+[node name="Title" type="Label" parent="LoadGamePanel"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 380.0
+offset_bottom = 60.0
+theme_override_fonts/font = ExtResource("2_yjkl4")
+theme_override_font_sizes/font_size = 24
+text = "加载游戏"
+horizontal_alignment = 1
+
+[node name="SaveList" type="ItemList" parent="LoadGamePanel"]
+offset_left = 20.0
+offset_top = 60.0
+offset_right = 380.0
+offset_bottom = 240.0
+
+[node name="LoadButton" type="Button" parent="LoadGamePanel"]
+offset_left = 100.0
+offset_top = 250.0
+offset_right = 200.0
+offset_bottom = 280.0
+text = "加载"
+
+[node name="CancelButton" type="Button" parent="LoadGamePanel"]
+offset_left = 220.0
+offset_top = 250.0
+offset_right = 320.0
+offset_bottom = 280.0
+text = "取消"
+
+[node name="SettingsPanel" type="Panel" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+
+[node name="Title" type="Label" parent="SettingsPanel"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 380.0
+offset_bottom = 60.0
+theme_override_fonts/font = ExtResource("2_yjkl4")
+theme_override_font_sizes/font_size = 24
+text = "设置"
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SettingsPanel"]
+offset_left = 40.0
+offset_top = 60.0
+offset_right = 360.0
+offset_bottom = 240.0
+theme_override_constants/separation = 20
+
+[node name="MusicVolume" type="HBoxContainer" parent="SettingsPanel/VBoxContainer"]
+offset_right = 320.0
+offset_bottom = 31.0
+
+[node name="Label" type="Label" parent="SettingsPanel/VBoxContainer/MusicVolume"]
+offset_top = 8.0
+offset_right = 80.0
+offset_bottom = 31.0
+text = "音乐音量"
+
+[node name="HSlider" type="HSlider" parent="SettingsPanel/VBoxContainer/MusicVolume"]
+offset_left = 84.0
+offset_right = 320.0
+offset_bottom = 31.0
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.1
+value = 0.8
+
+[node name="SoundVolume" type="HBoxContainer" parent="SettingsPanel/VBoxContainer"]
+offset_top = 51.0
+offset_right = 320.0
+offset_bottom = 82.0
+
+[node name="Label" type="Label" parent="SettingsPanel/VBoxContainer/SoundVolume"]
+offset_top = 8.0
+offset_right = 80.0
+offset_bottom = 31.0
+text = "音效音量"
+
+[node name="HSlider" type="HSlider" parent="SettingsPanel/VBoxContainer/SoundVolume"]
+offset_left = 84.0
+offset_right = 320.0
+offset_bottom = 31.0
+size_flags_horizontal = 3
+max_value = 1.0
+step = 0.1
+value = 0.8
+
+[node name="FullScreen" type="HBoxContainer" parent="SettingsPanel/VBoxContainer"]
+offset_top = 102.0
+offset_right = 320.0
+offset_bottom = 133.0
+
+[node name="Label" type="Label" parent="SettingsPanel/VBoxContainer/FullScreen"]
+offset_top = 8.0
+offset_right = 80.0
+offset_bottom = 31.0
+text = "全屏显示"
+
+[node name="CheckBox" type="CheckBox" parent="SettingsPanel/VBoxContainer/FullScreen"]
+offset_left = 84.0
+offset_right = 108.0
+offset_bottom = 31.0
+
+[node name="SaveButton" type="Button" parent="SettingsPanel"]
+offset_left = 100.0
+offset_top = 250.0
+offset_right = 200.0
+offset_bottom = 280.0
+text = "保存"
+
+[node name="CancelButton" type="Button" parent="SettingsPanel"]
+offset_left = 220.0
+offset_top = 250.0
+offset_right = 320.0
+offset_bottom = 280.0
+text = "取消"
