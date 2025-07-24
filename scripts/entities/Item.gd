@@ -26,8 +26,27 @@ var is_initialized: bool = false
 signal item_clicked(item)
 signal item_collected(item)
 
+# 创建简单纹理
+func create_simple_texture() -> void:
+	# 创建一个简单的物品纹理（绿色方块代表物品）
+	var image = Image.create(64, 64, false, Image.FORMAT_RGB8)
+	image.fill(Color(0.2, 1.0, 0.2))  # 绿色
+	
+	# 添加一些细节（白色边框）
+	for x in range(64):
+		for y in range(64):
+			if x < 2 or x >= 62 or y < 2 or y >= 62:
+				image.set_pixel(x, y, Color(0.9, 0.9, 0.9))  # 白色边框
+	
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	$Sprite2D.texture = texture
+
 # 初始化
 func _ready() -> void:
+	# 创建简单纹理
+	create_simple_texture()
+	
 	# 加载物品数据
 	load_item_data()
 	

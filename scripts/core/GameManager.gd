@@ -119,8 +119,8 @@ func load_floor(floor_number: int) -> void:
 	# 发送楼层变化信号
 	floor_changed.emit(floor_number)
 	
-	# 这里应该调用地图管理器加载对应楼层
-	# MapManager.load_floor(floor_number)
+	# 调用地图管理器加载对应楼层
+	MapManager.load_floor(floor_number)
 
 # 更新玩家属性
 func update_player_stat(stat_name: String, value) -> void:
@@ -135,15 +135,14 @@ func add_player_stat(stat_name: String, amount) -> void:
 		player_stats_changed.emit(player_data)
 
 # 减少玩家属性值
+func reduce_player_stat(stat_name: String, amount) -> bool:# 减少玩家属性值
 func reduce_player_stat(stat_name: String, amount) -> bool:
 	if player_data.has(stat_name):
 		if player_data[stat_name] >= amount:
 			player_data[stat_name] -= amount
 			player_stats_changed.emit(player_data)
 			return true
-	return false
-
-# 检查玩家是否有足够的钥匙
+	return false 检查玩家是否有足够的钥匙
 func has_key(key_type: String) -> bool:
 	var key_name = key_type + "_keys"
 	if player_data.has(key_name):
@@ -154,6 +153,11 @@ func has_key(key_type: String) -> bool:
 func use_key(key_type: String) -> bool:
 	var key_name = key_type + "_keys"
 	return reduce_player_stat(key_name, 1)
+
+# 添加钥匙
+func add_key(key_type: String) -> void:
+	var key_name = key_type + "_keys"
+	add_player_stat(key_name, 1)
 
 # 增加经验值并检查升级
 func add_exp(amount: int) -> void:

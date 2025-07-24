@@ -13,14 +13,61 @@ extends Control
 @onready var experience_value = $HBoxContainer/Experience/Value
 @onready var level_value = $HBoxContainer/Level/Value
 
+# 图标节点引用
+@onready var health_icon = $HBoxContainer/Health/Icon
+@onready var attack_icon = $HBoxContainer/Attack/Icon
+@onready var defense_icon = $HBoxContainer/Defense/Icon
+@onready var yellow_key_icon = $HBoxContainer/YellowKey/Icon
+@onready var blue_key_icon = $HBoxContainer/BlueKey/Icon
+@onready var red_key_icon = $HBoxContainer/RedKey/Icon
+@onready var gold_icon = $HBoxContainer/Gold/Icon
+
 # 初始化
+@onready var GameManager = get_node("/root/GameManager")
+
 func _ready() -> void:
-	# 连接信号
+	# 创建简单的图标纹理
+	create_simple_icons()
+
 	GameManager.player_stats_changed.connect(_on_player_stats_changed)
 	GameManager.floor_changed.connect(_on_floor_changed)
-	
+	update_all()
+
 	# 初始更新
 	update_all()
+
+# 创建简单的图标纹理
+func create_simple_icons() -> void:
+	# 创建不同颜色的纹理
+	var heart_texture = create_simple_texture(Color.RED, 32, 32)
+	var sword_texture = create_simple_texture(Color.GRAY, 32, 32)
+	var shield_texture = create_simple_texture(Color.BLUE, 32, 32)
+	var key_texture = create_simple_texture(Color.YELLOW, 32, 32)
+	
+	# 设置图标
+	if health_icon:
+		health_icon.texture = heart_texture
+	if attack_icon:
+		attack_icon.texture = sword_texture
+	if defense_icon:
+		defense_icon.texture = shield_texture
+	if yellow_key_icon:
+		yellow_key_icon.texture = key_texture
+	if blue_key_icon:
+		blue_key_icon.texture = key_texture
+	if red_key_icon:
+		red_key_icon.texture = key_texture
+	if gold_icon:
+		gold_icon.texture = key_texture
+
+# 创建简单的纹理
+func create_simple_texture(color: Color, width: int, height: int) -> ImageTexture:
+	var image = Image.create(width, height, false, Image.FORMAT_RGBA8)
+	image.fill(color)
+	
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	return texture
 
 # 更新所有状态
 func update_all() -> void:
@@ -34,7 +81,7 @@ func update_all() -> void:
 		GameManager.player_data["red_keys"]
 	)
 	update_gold(GameManager.player_data["gold"])
-	update_experience(GameManager.player_data["experience"], GameManager.player_data["level"])
+	update_experience(GameManager.player_data["exp"], GameManager.player_data["level"])
 
 # 更新楼层
 func update_floor(floor_number: int) -> void:
@@ -77,40 +124,15 @@ func update_experience(experience: int, level: int) -> void:
 	level_value.text = str(level)
 
 # 玩家状态变化处理
-func _on_player_stats_changed(stat_name: String, value) -> void:
-	match stat_name:
-		"health":
-			update_health(value, GameManager.player_data["max_health"])
-		"max_health":
-			update_health(GameManager.player_data["health"], value)
-		"attack":
-			update_attack(value)
-		"defense":
-			update_defense(value)
-		"yellow_keys":
-			update_keys(
-				value,
-				GameManager.player_data["blue_keys"],
-				GameManager.player_data["red_keys"]
-			)
-		"blue_keys":
-			update_keys(
-				GameManager.player_data["yellow_keys"],
-				value,
-				GameManager.player_data["red_keys"]
-			)
-		"red_keys":
-			update_keys(
-				GameManager.player_data["yellow_keys"],
-				GameManager.player_data["blue_keys"],
-				value
-			)
-		"gold":
-			update_gold(value)
-		"experience":
-			update_experience(value, GameManager.player_data["level"])
-		"level":
-			update_experience(GameManager.player_data["experience"], value)
+func _on_player_stats_changed(stats: Dictionary) -> void:
+	var player_data = stats
+	update_health(player_data["health"], player_data["max_health"])
+	update_attack(player_data["attack"])
+	update_defense(player_data["defense"])
+	update_keys(player_data["yellow_keys"], player_data["blue_keys"], player_data["red_keys"])
+	update_gold(player_data["gold"])
+	update_experience(player_data["exp"], player_data["level"])
+
 
 # 楼层变化处理
 func _on_floor_changed(floor_number: int) -> void:

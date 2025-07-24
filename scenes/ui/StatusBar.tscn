@@ -1,10 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://c8kqhpixj5qv"]
+[gd_scene load_steps=2 format=3 uid="uid://c8kqhpixj5qv"]
 
 [ext_resource type="Script" path="res://scripts/ui/StatusBar.gd" id="1_lfmqj"]
-[ext_resource type="Texture2D" uid="uid://c8kqhpixj5qv" path="res://assets/sprites/ui/heart.png" id="2_lfmqj"]
-[ext_resource type="Texture2D" uid="uid://c8kqhpixj5qv" path="res://assets/sprites/ui/sword.png" id="3_lfmqj"]
-[ext_resource type="Texture2D" uid="uid://c8kqhpixj5qv" path="res://assets/sprites/ui/shield.png" id="4_lfmqj"]
-[ext_resource type="Texture2D" uid="uid://c8kqhpixj5qv" path="res://assets/sprites/items/yellow_key.png" id="5_lfmqj"]
 
 [node name="StatusBar" type="Control"]
 anchor_right = 1.0
@@ -36,7 +32,6 @@ offset_bottom = 60.0
 offset_right = 40.0
 offset_bottom = 60.0
 minimum_size = Vector2(40, 40)
-texture = ExtResource("2_lfmqj")
 expand_mode = 1
 stretch_mode = 5
 
@@ -56,7 +51,6 @@ offset_bottom = 60.0
 offset_right = 40.0
 offset_bottom = 60.0
 minimum_size = Vector2(40, 40)
-texture = ExtResource("3_lfmqj")
 expand_mode = 1
 stretch_mode = 5
 
@@ -76,7 +70,6 @@ offset_bottom = 60.0
 offset_right = 40.0
 offset_bottom = 60.0
 minimum_size = Vector2(40, 40)
-texture = ExtResource("4_lfmqj")
 expand_mode = 1
 stretch_mode = 5
 
@@ -96,7 +89,6 @@ offset_bottom = 60.0
 offset_right = 40.0
 offset_bottom = 60.0
 minimum_size = Vector2(40, 40)
-texture = ExtResource("5_lfmqj")
 expand_mode = 1
 stretch_mode = 5
 
@@ -116,7 +108,6 @@ offset_bottom = 60.0
 offset_right = 40.0
 offset_bottom = 60.0
 minimum_size = Vector2(40, 40)
-texture = ExtResource("5_lfmqj")
 expand_mode = 1
 stretch_mode = 5
 modulate = Color(0.2, 0.4, 1.0, 1.0)
@@ -137,7 +128,6 @@ offset_bottom = 60.0
 offset_right = 40.0
 offset_bottom = 60.0
 minimum_size = Vector2(40, 40)
-texture = ExtResource("5_lfmqj")
 expand_mode = 1
 stretch_mode = 5
 modulate = Color(1.0, 0.2, 0.2, 1.0)
@@ -158,7 +148,6 @@ offset_bottom = 60.0
 offset_right = 40.0
 offset_bottom = 60.0
 minimum_size = Vector2(40, 40)
-texture = ExtResource("5_lfmqj")
 expand_mode = 1
 stretch_mode = 5
 modulate = Color(1.0, 0.84, 0.0, 1.0)

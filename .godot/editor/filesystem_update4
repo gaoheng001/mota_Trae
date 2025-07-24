@@ -1,0 +1,4 @@
+res://scripts/core/GameManager.gd
+res://scripts/entities/Player.gd
+res://scripts/levels/GameWorld.gd
+res://scripts/ui/StatusBar.gd

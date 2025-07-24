@@ -13,8 +13,27 @@ var is_initialized: bool = false
 # 信号
 signal enemy_clicked(enemy)
 
+# 创建简单纹理
+func create_simple_texture() -> void:
+	# 创建一个简单的敌人纹理（红色方块代表敌人）
+	var image = Image.create(64, 64, false, Image.FORMAT_RGB8)
+	image.fill(Color(1.0, 0.2, 0.2))  # 红色
+	
+	# 添加一些细节（黑色边框）
+	for x in range(64):
+		for y in range(64):
+			if x < 2 or x >= 62 or y < 2 or y >= 62:
+				image.set_pixel(x, y, Color(0.1, 0.1, 0.1))  # 黑色边框
+	
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	$Sprite2D.texture = texture
+
 # 初始化
 func _ready() -> void:
+	# 创建简单纹理
+	create_simple_texture()
+	
 	# 加载敌人数据
 	load_enemy_data()
 	

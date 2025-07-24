@@ -27,6 +27,9 @@ func _ready() -> void:
 	# 隐藏对话面板
 	dialog_panel.visible = false
 	
+	# 创建简单纹理
+	create_simple_texture()
+	
 	# 加载NPC数据
 	load_npc_data()
 	
@@ -101,13 +104,26 @@ func load_npc_data() -> void:
 		}
 		dialogs = npc_data["dialogs"]
 
+# 创建简单纹理
+func create_simple_texture() -> void:
+	# 创建一个简单的NPC纹理（橙色方块代表老人）
+	var image = Image.create(48, 48, false, Image.FORMAT_RGB8)
+	image.fill(Color(1.0, 0.6, 0.2))  # 橙色
+	
+	# 添加一些细节（深色边框）
+	for x in range(48):
+		for y in range(48):
+			if x < 2 or x >= 46 or y < 2 or y >= 46:
+				image.set_pixel(x, y, Color(0.4, 0.2, 0.1))  # 深棕色边框
+	
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	$Sprite2D.texture = texture
+
 # 更新外观
 func update_appearance() -> void:
-	# 设置精灵纹理
-	if npc_data.has("sprite") and ResourceLoader.exists(npc_data["sprite"]):
-		var texture = load(npc_data["sprite"])
-		if texture:
-			$Sprite2D.texture = texture
+	# 纹理已在create_simple_texture中设置
+	pass
 
 # 开始对话
 func start_dialog() -> void:

@@ -1,8 +1,15 @@
 extends CharacterBody2D
 # 玩家控制器 - 负责处理玩家的移动和交互
 
-# 移动速度
-@export var move_speed: float = 4.0
+# 引用游戏管理器
+var GameManager = Engine.get_singleton("GameManager")
+
+func _ready() -> void:
+	// ... existing code ...
+	// ... existing code ...
+
+# 移动速度（每秒移动的距离）
+@export var move_speed: float = 300.0
 
 # 是否正在移动
 var is_moving: bool = false
@@ -23,9 +30,28 @@ var move_direction: Vector2 = Vector2.ZERO
 signal movement_completed
 signal interaction_triggered(object)
 
+# 创建简单纹理
+func create_simple_texture() -> void:
+	# 创建一个简单的玩家纹理（蓝色方块代表玩家）
+	var image = Image.create(64, 64, false, Image.FORMAT_RGB8)
+	image.fill(Color(0.2, 0.2, 1.0))  # 蓝色
+	
+	# 添加一些细节（白色边框）
+	for x in range(64):
+		for y in range(64):
+			if x < 2 or x >= 62 or y < 2 or y >= 62:
+				image.set_pixel(x, y, Color(0.9, 0.9, 0.9))  # 浅灰色边框
+	
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	$Sprite2D.texture = texture
+
 func _ready() -> void:
 	# 初始化目标位置为当前位置
 	target_position = position
+	
+	# 创建简单纹理
+	create_simple_texture()
 	
 	# 连接到地图管理器的信号
 	MapManager.player_moved.connect(_on_map_player_moved)
@@ -41,11 +67,11 @@ func _physics_process(delta: float) -> void:
 	
 	# 如果正在移动，继续移动到目标位置
 	if is_moving:
-		var move_step = move_direction * move_speed
 		var distance_to_target = position.distance_to(target_position)
+		var move_step = move_speed * delta
 		
 		# 如果距离目标位置很近，直接设置为目标位置
-		if distance_to_target < move_speed:
+		if distance_to_target <= move_step:
 			position = target_position
 			is_moving = false
 			movement_completed.emit()
@@ -54,7 +80,8 @@ func _physics_process(delta: float) -> void:
 			play_idle_animation()
 		else:
 			# 继续移动
-			position += move_step
+			var direction_to_target = (target_position - position).normalized()
+			position += direction_to_target * move_step
 	else:
 		# 处理输入
 		process_input()
@@ -85,6 +112,7 @@ func process_input() -> void:
 func move(direction: Vector2) -> void:
 	# 计算地图上的移动
 	var map_direction = Vector2i(int(direction.x), int(direction.y))
+	var old_map_position = MapManager.player_position
 	var success = MapManager.move_player(map_direction)
 	
 	# 如果地图移动成功，更新视觉位置
@@ -92,8 +120,14 @@ func move(direction: Vector2) -> void:
 		# 设置移动方向
 		move_direction = direction
 		
-		# 计算目标位置
-		target_position = position + direction * grid_size
+		# 获取TileMap引用并计算目标位置
+		var game_world = get_tree().get_first_node_in_group("game_world")
+		if game_world and game_world.tilemap:
+			# 使用TileMap的坐标转换来计算正确的目标位置
+			target_position = game_world.tilemap.map_to_local(MapManager.player_position)
+		else:
+			# 备用方案：使用网格大小计算
+			target_position = position + direction * grid_size
 		
 		# 设置为移动状态
 		is_moving = true
@@ -208,7 +242,14 @@ func set_grid_position(grid_position: Vector2i) -> void:
 	# 更新地图管理器中的玩家位置
 	MapManager.player_position = grid_position
 	
-	# 更新视觉位置
-	position = Vector2(grid_position.x * grid_size, grid_position.y * grid_size)
+	# 获取TileMap引用并使用其坐标转换
+	var game_world = get_tree().get_first_node_in_group("game_world")
+	if game_world and game_world.tilemap:
+		# 使用TileMap的坐标转换来计算正确的世界坐标
+		position = game_world.tilemap.map_to_local(grid_position)
+	else:
+		# 备用方案：使用网格大小计算
+		position = Vector2(grid_position.x * grid_size, grid_position.y * grid_size)
+	
 	target_position = position
 	is_moving = false

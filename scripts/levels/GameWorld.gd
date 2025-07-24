@@ -26,6 +26,12 @@ var current_floor: int = 1
 func _ready() -> void:
 	print("游戏世界初始化")
 	
+	# 添加到game_world组
+	add_to_group("game_world")
+	
+	# 创建动态TileSet
+	create_dynamic_tileset()
+	
 	# 创建地图元素容器
 	enemies = Node2D.new()
 	enemies.name = "Enemies"
@@ -39,25 +45,31 @@ func _ready() -> void:
 	npcs.name = "NPCs"
 	add_child(npcs)
 	
-	# 连接信号
+# 节点引用
+@onready var GameManager = get_node("/root/GameManager")
+
+func _ready() -> void:
 	GameManager.floor_changed.connect(_on_floor_changed)
 	GameManager.game_state_changed.connect(_on_game_state_changed)
 	MapManager.map_loaded.connect(_on_map_loaded)
 	MapManager.tile_changed.connect(_on_tile_changed)
 	BattleManager.battle_started.connect(_on_battle_started)
 	BattleManager.battle_ended.connect(_on_battle_ended)
-	
+
 	# 初始化UI
 	init_ui()
-	
-	# 加载当前楼层
-	load_current_floor()
-	
+
+	# 自动开始新游戏
+	GameManager.start_new_game()
+
 	# 设置输入处理
 	set_process_input(true)
 
 # 初始化UI
 func init_ui() -> void:
+	# 设置相机缩放
+	setup_camera()
+	
 	# 初始化状态栏
 	if status_bar:
 		update_status_bar()
@@ -67,6 +79,28 @@ func init_ui() -> void:
 		game_menu.visible = false
 	if battle_scene:
 		battle_scene.visible = false
+
+# 设置相机
+func setup_camera() -> void:
+	if not player:
+		print("警告: 玩家节点未找到")
+		return
+	
+	# 获取相机节点
+	var camera = player.get_node("Camera2D")
+	if not camera:
+		print("警告: Camera2D节点未找到")
+		return
+	
+	print("设置相机缩放")
+	# 设置相机缩放以适应地图大小
+	# 地图是11x11，瓦片大小64x64，总大小704x704
+	# 屏幕大小1280x720，需要适当缩放
+	camera.zoom = Vector2(0.8, 0.8)  # 缩小以显示更多地图内容
+	camera.enabled = true
+	camera.position_smoothing_enabled = true
+	camera.position_smoothing_speed = 5.0
+	print("相机设置完成")
 
 # 加载当前楼层
 func load_current_floor() -> void:
@@ -128,8 +162,8 @@ func set_tile(position: Vector2i, tile_type: int) -> void:
 
 # 创建地图元素
 func create_map_entity(position: Vector2i, tile_type: int) -> void:
-	# 计算世界坐标
-	var world_position = Vector2(position.x * 64, position.y * 64)
+	# 使用TileMap的坐标转换来计算正确的世界坐标
+	var world_position = tilemap.map_to_local(position)
 	
 	# 根据地图元素类型创建实体
 	match tile_type:
@@ -154,6 +188,27 @@ func create_map_entity(position: Vector2i, tile_type: int) -> void:
 			item_instance.item_id = item_id
 			
 			items.add_child(item_instance)
+			
+		MapManager.TileType.KEY_YELLOW:
+			# 创建黄钥匙
+			var key_instance = item_scene.instantiate()
+			key_instance.position = world_position
+			key_instance.item_id = "yellow_key"
+			items.add_child(key_instance)
+			
+		MapManager.TileType.KEY_BLUE:
+			# 创建蓝钥匙
+			var key_instance = item_scene.instantiate()
+			key_instance.position = world_position
+			key_instance.item_id = "blue_key"
+			items.add_child(key_instance)
+			
+		MapManager.TileType.KEY_RED:
+			# 创建红钥匙
+			var key_instance = item_scene.instantiate()
+			key_instance.position = world_position
+			key_instance.item_id = "red_key"
+			items.add_child(key_instance)
 			
 		MapManager.TileType.NPC:
 			# 创建NPC
@@ -311,8 +366,8 @@ func _on_tile_changed(position: Vector2i, old_type: int, new_type: int) -> void:
 
 # 移除指定位置的实体
 func remove_entity_at_position(position: Vector2i) -> void:
-	# 计算世界坐标
-	var world_position = Vector2(position.x * 64, position.y * 64)
+	# 使用TileMap的坐标转换来计算正确的世界坐标
+	var world_position = tilemap.map_to_local(position)
 	
 	# 检查并移除敌人
 	for enemy in enemies.get_children():
@@ -377,6 +432,103 @@ func _on_battle_ended(result: Dictionary) -> void:
 	# 如果战斗失败，显示游戏结束
 	if not result["victory"]:
 		show_game_over()
+
+# 创建动态TileSet
+func create_dynamic_tileset() -> void:
+	if not tilemap:
+		return
+	
+	# 创建新的TileSet
+	var tile_set = TileSet.new()
+	
+	# 设置瓦片大小
+	tile_set.tile_size = Vector2i(64, 64)
+	
+	# 创建TileSetAtlasSource
+	var atlas_source = TileSetAtlasSource.new()
+	
+	# 创建瓦片纹理
+	var texture = create_tileset_texture()
+	atlas_source.texture = texture
+	atlas_source.texture_region_size = Vector2i(64, 64)
+	
+	# 添加瓦片定义（暂时不添加碰撞）
+	for i in range(7):  # 0-6: 地板、墙、黄门、蓝门、红门、上楼梯、下楼梯
+		atlas_source.create_tile(Vector2i(i, 0))
+	
+	# 添加atlas_source到tile_set
+	tile_set.add_source(atlas_source, 0)
+	
+	# 应用TileSet到TileMap
+	tilemap.tile_set = tile_set
+	print("TileSet创建完成")
+
+func create_tileset_texture() -> ImageTexture:
+	# 创建448x64的图像（7个64x64的瓦片）
+	var image = Image.create(448, 64, false, Image.FORMAT_RGBA8)
+	
+	# 地板瓦片 (0,0)
+	for y in range(64):
+		for x in range(64):
+			var color = Color(0.545, 0.451, 0.333, 1.0)  # 棕色地板
+			if x == 0 or y == 0 or x == 63 or y == 63:
+				color = Color(0.396, 0.263, 0.196, 1.0)  # 深棕色边框
+			image.set_pixel(x, y, color)
+	
+	# 墙瓦片 (64,0)
+	for y in range(64):
+		for x in range(64, 128):
+			var color = Color(0.29, 0.29, 0.29, 1.0)  # 灰色墙
+			if (x - 64) == 0 or y == 0 or (x - 64) == 63 or y == 63:
+				color = Color(0.16, 0.16, 0.16, 1.0)  # 深灰色边框
+			image.set_pixel(x, y, color)
+	
+	# 黄门瓦片 (128,0)
+	for y in range(64):
+		for x in range(128, 192):
+			var color = Color(1.0, 0.843, 0.0, 1.0)  # 黄色门
+			if (x - 128) == 0 or y == 0 or (x - 128) == 63 or y == 63:
+				color = Color(0.722, 0.525, 0.043, 1.0)  # 深黄色边框
+			image.set_pixel(x, y, color)
+	
+	# 蓝门瓦片 (192,0)
+	for y in range(64):
+		for x in range(192, 256):
+			var color = Color(0.255, 0.412, 0.882, 1.0)  # 蓝色门
+			if (x - 192) == 0 or y == 0 or (x - 192) == 63 or y == 63:
+				color = Color(0.098, 0.098, 0.439, 1.0)  # 深蓝色边框
+			image.set_pixel(x, y, color)
+	
+	# 红门瓦片 (256,0)
+	for y in range(64):
+		for x in range(256, 320):
+			var color = Color(0.863, 0.078, 0.235, 1.0)  # 红色门
+			if (x - 256) == 0 or y == 0 or (x - 256) == 63 or y == 63:
+				color = Color(0.545, 0.0, 0.0, 1.0)  # 深红色边框
+			image.set_pixel(x, y, color)
+	
+	# 上楼梯瓦片 (320,0)
+	for y in range(64):
+		for x in range(320, 384):
+			var color = Color(0.627, 0.533, 0.4, 1.0)  # 楼梯颜色
+			# 添加楼梯纹理
+			if y % 8 < 4:
+				color = color.lightened(0.2)
+			image.set_pixel(x, y, color)
+	
+	# 下楼梯瓦片 (384,0)
+	for y in range(64):
+		for x in range(384, 448):
+			var color = Color(0.392, 0.278, 0.196, 1.0)  # 深楼梯颜色
+			# 添加楼梯纹理
+			if y % 8 < 4:
+				color = color.lightened(0.2)
+			image.set_pixel(x, y, color)
+	
+	# 创建纹理
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	return texture
 
 # 显示游戏结束
 func show_game_over() -> void:

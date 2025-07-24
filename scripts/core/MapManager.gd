@@ -25,7 +25,10 @@ enum TileType {
 	STAIRS_DOWN,
 	ENEMY,
 	ITEM,
-	NPC
+	NPC,
+	KEY_YELLOW,
+	KEY_BLUE,
+	KEY_RED
 }
 
 # 信号
@@ -129,10 +132,13 @@ func add_floor_specific_elements(map_data: Array, floor_number: int) -> void:
 		map_data[y][x] = TileType.WALL
 	
 	# 添加上下楼梯
+	var down_x = -1
+	var down_y = -1
+	
 	if floor_number > 1:
 		# 添加下楼梯（到上一层）
-		var down_x = rng.randi_range(1, map_width - 2)
-		var down_y = rng.randi_range(1, map_height - 2)
+		down_x = rng.randi_range(1, map_width - 2)
+		down_y = rng.randi_range(1, map_height - 2)
 		map_data[down_y][down_x] = TileType.STAIRS_DOWN
 	
 	# 添加上楼梯（到下一层）
@@ -185,6 +191,26 @@ func add_floor_specific_elements(map_data: Array, floor_number: int) -> void:
 			item_x = rng.randi_range(1, map_width - 2)
 			item_y = rng.randi_range(1, map_height - 2)
 		map_data[item_y][item_x] = TileType.ITEM
+	
+	# 添加钥匙
+	var key_types = [TileType.KEY_YELLOW, TileType.KEY_BLUE, TileType.KEY_RED]
+	var key_counts = [2, 1, 1]  # 黄钥匙多，红钥匙少
+	
+	for i in range(key_types.size()):
+		var key_type = key_types[i]
+		var count = key_counts[i]
+		
+		# 高层增加钥匙数量
+		count += floor(floor_number / 10)
+		
+		for j in range(count):
+			var key_x = rng.randi_range(1, map_width - 2)
+			var key_y = rng.randi_range(1, map_height - 2)
+			# 确保不覆盖其他特殊元素
+			while (map_data[key_y][key_x] != TileType.FLOOR):
+				key_x = rng.randi_range(1, map_width - 2)
+				key_y = rng.randi_range(1, map_height - 2)
+			map_data[key_y][key_x] = key_type
 
 # 设置玩家初始位置
 func set_player_initial_position(floor_number: int) -> void:
@@ -292,6 +318,24 @@ func move_player(direction: Vector2i) -> bool:
 			# 这里应该调用物品系统
 			# 暂时简化处理：直接移除物品
 			set_tile(new_position, TileType.FLOOR)
+			
+		TileType.KEY_YELLOW:
+			# 拾取黄钥匙
+			GameManager.add_key("yellow")
+			set_tile(new_position, TileType.FLOOR)
+			print("获得黄钥匙！")
+			
+		TileType.KEY_BLUE:
+			# 拾取蓝钥匙
+			GameManager.add_key("blue")
+			set_tile(new_position, TileType.FLOOR)
+			print("获得蓝钥匙！")
+			
+		TileType.KEY_RED:
+			# 拾取红钥匙
+			GameManager.add_key("red")
+			set_tile(new_position, TileType.FLOOR)
+			print("获得红钥匙！")
 			
 		TileType.NPC:
 			# 与NPC对话
