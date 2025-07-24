@@ -2,11 +2,9 @@ extends CharacterBody2D
 # 玩家控制器 - 负责处理玩家的移动和交互
 
 # 引用游戏管理器
-var GameManager = Engine.get_singleton("GameManager")
+var game_manager
 
-func _ready() -> void:
-	// ... existing code ...
-	// ... existing code ...
+# 这个重复的 _ready 函数已被移除
 
 # 移动速度（每秒移动的距离）
 @export var move_speed: float = 300.0
@@ -47,6 +45,9 @@ func create_simple_texture() -> void:
 	$Sprite2D.texture = texture
 
 func _ready() -> void:
+	# 初始化游戏管理器引用
+	game_manager = GameManager
+	
 	# 初始化目标位置为当前位置
 	target_position = position
 	
@@ -62,7 +63,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	# 如果游戏状态不是PLAYING，不处理输入
-	if GameManager.current_state != GameManager.GameState.PLAYING:
+	if game_manager and game_manager.current_state != game_manager.GameState.PLAYING:
 		return
 	
 	# 如果正在移动，继续移动到目标位置

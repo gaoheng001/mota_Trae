@@ -22,17 +22,19 @@ extends Control
 @onready var red_key_icon = $HBoxContainer/RedKey/Icon
 @onready var gold_icon = $HBoxContainer/Gold/Icon
 
-# 初始化
-@onready var GameManager = get_node("/root/GameManager")
+# 游戏管理器引用
+var game_manager
 
 func _ready() -> void:
+	# 获取游戏管理器引用
+	game_manager = GameManager
+	
 	# 创建简单的图标纹理
 	create_simple_icons()
 
-	GameManager.player_stats_changed.connect(_on_player_stats_changed)
-	GameManager.floor_changed.connect(_on_floor_changed)
-	update_all()
-
+	game_manager.player_stats_changed.connect(_on_player_stats_changed)
+	game_manager.floor_changed.connect(_on_floor_changed)
+	
 	# 初始更新
 	update_all()
 
@@ -71,17 +73,20 @@ func create_simple_texture(color: Color, width: int, height: int) -> ImageTextur
 
 # 更新所有状态
 func update_all() -> void:
-	update_floor(GameManager.game_progress["current_floor"])
-	update_health(GameManager.player_data["health"], GameManager.player_data["max_health"])
-	update_attack(GameManager.player_data["attack"])
-	update_defense(GameManager.player_data["defense"])
+	if not game_manager:
+		return
+		
+	update_floor(game_manager.game_progress["current_floor"])
+	update_health(game_manager.player_data["health"], game_manager.player_data["max_health"])
+	update_attack(game_manager.player_data["attack"])
+	update_defense(game_manager.player_data["defense"])
 	update_keys(
-		GameManager.player_data["yellow_keys"],
-		GameManager.player_data["blue_keys"],
-		GameManager.player_data["red_keys"]
+		game_manager.player_data["yellow_keys"],
+		game_manager.player_data["blue_keys"],
+		game_manager.player_data["red_keys"]
 	)
-	update_gold(GameManager.player_data["gold"])
-	update_experience(GameManager.player_data["exp"], GameManager.player_data["level"])
+	update_gold(game_manager.player_data["gold"])
+	update_experience(game_manager.player_data["exp"], game_manager.player_data["level"])
 
 # 更新楼层
 func update_floor(floor_number: int) -> void:
@@ -89,16 +94,10 @@ func update_floor(floor_number: int) -> void:
 
 # 更新生命值
 func update_health(health: int, max_health: int) -> void:
-	health_value.text = str(health) + "/" + str(max_health)
+	health_value.text = str(health)
 	
-	# 根据生命值百分比改变颜色
-	var health_percent = float(health) / max_health
-	if health_percent <= 0.2:
-		health_value.modulate = Color(1, 0, 0) # 红色
-	elif health_percent <= 0.5:
-		health_value.modulate = Color(1, 1, 0) # 黄色
-	else:
-		health_value.modulate = Color(1, 1, 1) # 白色
+	# 生命值显示为白色（移除基于百分比的颜色变化）
+	health_value.modulate = Color(1, 1, 1) # 白色
 
 # 更新攻击力
 func update_attack(attack: int) -> void:
@@ -110,6 +109,7 @@ func update_defense(defense: int) -> void:
 
 # 更新钥匙
 func update_keys(yellow: int, blue: int, red: int) -> void:
+	print("更新钥匙显示: 黄=" + str(yellow) + ", 蓝=" + str(blue) + ", 红=" + str(red))
 	yellow_key_value.text = str(yellow)
 	blue_key_value.text = str(blue)
 	red_key_value.text = str(red)

@@ -11,6 +11,9 @@ var current_map_data: Array = []
 # 所有楼层的地图数据缓存
 var floor_maps: Dictionary = {}
 
+# 缓存每个楼层的实际状态（包括已击败的敌人、拾取的物品等）
+var floor_states: Dictionary = {}
+
 # 玩家在地图上的位置
 var player_position: Vector2i = Vector2i(5, 5)
 
@@ -39,14 +42,23 @@ signal player_moved(old_position, new_position)
 # 初始化
 func _ready() -> void:
 	print("地图管理器初始化")
+	# 连接战斗结束信号
+	BattleManager.battle_ended.connect(_on_battle_ended)
 
 # 加载指定楼层的地图
 func load_floor(floor_number: int) -> void:
 	print("加载第 " + str(floor_number) + " 层地图")
 	
-	# 检查是否已缓存该楼层地图
-	if floor_maps.has(floor_number):
+	# 检查是否已有该楼层的实际状态
+	if floor_states.has(floor_number):
+		# 加载已保存的楼层状态
+		current_map_data = floor_states[floor_number].duplicate(true)
+		print("加载已保存的楼层状态")
+	elif floor_maps.has(floor_number):
+		# 使用初始地图数据并保存为当前状态
 		current_map_data = floor_maps[floor_number].duplicate(true)
+		floor_states[floor_number] = current_map_data.duplicate(true)
+		print("使用初始地图数据创建楼层状态")
 	else:
 		# 从文件加载或生成新地图
 		var map_data = load_map_from_file(floor_number)
@@ -54,9 +66,11 @@ func load_floor(floor_number: int) -> void:
 			# 如果文件不存在，则生成新地图
 			map_data = generate_map(floor_number)
 		
-		# 缓存地图数据
+		# 缓存初始地图数据和当前状态
 		floor_maps[floor_number] = map_data.duplicate(true)
+		floor_states[floor_number] = map_data.duplicate(true)
 		current_map_data = map_data
+		print("生成新地图并创建楼层状态")
 	
 	# 设置玩家初始位置
 	set_player_initial_position(floor_number)
@@ -212,29 +226,56 @@ func add_floor_specific_elements(map_data: Array, floor_number: int) -> void:
 				key_y = rng.randi_range(1, map_height - 2)
 			map_data[key_y][key_x] = key_type
 
+# 记录玩家来源方向（用于确定在新楼层的位置）
+var player_came_from: String = ""  # "up" 表示从上层下来，"down" 表示从下层上来
+
 # 设置玩家初始位置
 func set_player_initial_position(floor_number: int) -> void:
-	# 对于第一层，设置固定的起始位置
-	if floor_number == 1:
+	# 对于第一层，如果是游戏开始或没有来源方向，设置固定的起始位置
+	if floor_number == 1 and player_came_from == "":
 		player_position = Vector2i(5, 9)  # 底部中间位置
+		print("第一层游戏开始位置: " + str(player_position))
 		return
 	
-	# 对于其他楼层，根据楼梯位置设置
+	# 根据来源方向和楼梯位置设置（包括第一层从上层下来的情况）
+	var target_stair_type: int
+	if player_came_from == "up":
+		# 从上层下来，应该在上楼梯旁边
+		target_stair_type = TileType.STAIRS_UP
+		print("从上层下来，寻找上楼梯")
+	elif player_came_from == "down":
+		# 从下层上来，应该在下楼梯旁边
+		target_stair_type = TileType.STAIRS_DOWN
+		print("从下层上来，寻找下楼梯")
+	else:
+		# 默认情况，寻找上楼梯
+		target_stair_type = TileType.STAIRS_UP
+		print("默认情况，寻找上楼梯")
+	
 	for y in range(map_height):
 		for x in range(map_width):
-			# 如果是从下一层下来，玩家应该在上楼梯旁边
-			if current_map_data[y][x] == TileType.STAIRS_UP:
+			if current_map_data[y][x] == target_stair_type:
 				# 检查楼梯周围的地板，选择一个作为玩家位置
 				var directions = [Vector2i(0, 1), Vector2i(1, 0), Vector2i(0, -1), Vector2i(-1, 0)]
 				for dir in directions:
 					var check_pos = Vector2i(x, y) + dir
 					if is_valid_position(check_pos) and get_tile(check_pos) == TileType.FLOOR:
 						player_position = check_pos
+						print("玩家位置设置在楼梯旁边: " + str(player_position))
 						return
 				
 				# 如果周围没有地板，就直接放在楼梯上
 				player_position = Vector2i(x, y)
+				print("玩家位置设置在楼梯上: " + str(player_position))
 				return
+	
+	# 如果没有找到目标楼梯，使用默认位置
+	if floor_number == 1:
+		player_position = Vector2i(5, 9)  # 第一层的默认位置
+		print("第一层使用默认位置: " + str(player_position))
+	else:
+		player_position = Vector2i(5, 5)  # 其他楼层的默认位置
+		print("使用默认玩家位置: " + str(player_position))
 
 # 获取指定位置的地图元素
 func get_tile(position: Vector2i) -> int:
@@ -247,6 +288,13 @@ func set_tile(position: Vector2i, tile_type: int) -> void:
 	if is_valid_position(position):
 		var old_type = current_map_data[position.y][position.x]
 		current_map_data[position.y][position.x] = tile_type
+		
+		# 更新当前楼层的状态缓存
+		var current_floor = GameManager.game_progress["current_floor"]
+		if floor_states.has(current_floor):
+			floor_states[current_floor][position.y][position.x] = tile_type
+			print("更新楼层状态: 位置 " + str(position) + " 从 " + str(old_type) + " 变为 " + str(tile_type))
+		
 		tile_changed.emit(position, old_type, tile_type)
 
 # 检查位置是否有效
@@ -273,6 +321,7 @@ func move_player(direction: Vector2i) -> bool:
 		TileType.DOOR_YELLOW:
 			# 需要黄钥匙
 			if GameManager.has_key("yellow"):
+				print("使用黄钥匙开门")
 				GameManager.use_key("yellow")
 				set_tile(new_position, TileType.FLOOR)
 			else:
@@ -281,6 +330,7 @@ func move_player(direction: Vector2i) -> bool:
 		TileType.DOOR_BLUE:
 			# 需要蓝钥匙
 			if GameManager.has_key("blue"):
+				print("使用蓝钥匙开门")
 				GameManager.use_key("blue")
 				set_tile(new_position, TileType.FLOOR)
 			else:
@@ -289,6 +339,7 @@ func move_player(direction: Vector2i) -> bool:
 		TileType.DOOR_RED:
 			# 需要红钥匙
 			if GameManager.has_key("red"):
+				print("使用红钥匙开门")
 				GameManager.use_key("red")
 				set_tile(new_position, TileType.FLOOR)
 			else:
@@ -297,6 +348,9 @@ func move_player(direction: Vector2i) -> bool:
 		TileType.STAIRS_UP:
 			# 上楼
 			var current_floor = GameManager.game_progress["current_floor"]
+			# 保存当前楼层状态
+			save_current_floor_state()
+			player_came_from = "down"  # 记录玩家从下层上来
 			GameManager.load_floor(current_floor + 1)
 			return true
 			
@@ -304,14 +358,28 @@ func move_player(direction: Vector2i) -> bool:
 			# 下楼
 			var current_floor = GameManager.game_progress["current_floor"]
 			if current_floor > 1:
+				# 保存当前楼层状态
+				save_current_floor_state()
+				player_came_from = "up"  # 记录玩家从上层下来
 				GameManager.load_floor(current_floor - 1)
 			return true
 			
 		TileType.ENEMY:
-			# 与敌人战斗
-			# 这里应该调用战斗系统
-			# 暂时简化处理：直接移除敌人
-			set_tile(new_position, TileType.FLOOR)
+			# 遇到敌人，触发战斗
+			var enemy_id = "slime"  # 这里应该根据楼层和位置确定敌人类型
+			var current_floor = GameManager.game_progress["current_floor"]
+			if current_floor >= 5:
+				enemy_id = "orc"
+			elif current_floor >= 10:
+				enemy_id = "ghost"
+			elif current_floor >= 15:
+				enemy_id = "dragon"
+			
+			# 开始战斗
+			BattleManager.start_battle(enemy_id)
+			# 战斗结果会通过信号处理，如果胜利则移除敌人并移动玩家
+			# 如果失败则玩家不移动
+			return false  # 暂时阻止移动，等待战斗结果
 			
 		TileType.ITEM:
 			# 拾取物品
@@ -319,23 +387,10 @@ func move_player(direction: Vector2i) -> bool:
 			# 暂时简化处理：直接移除物品
 			set_tile(new_position, TileType.FLOOR)
 			
-		TileType.KEY_YELLOW:
-			# 拾取黄钥匙
-			GameManager.add_key("yellow")
-			set_tile(new_position, TileType.FLOOR)
-			print("获得黄钥匙！")
-			
-		TileType.KEY_BLUE:
-			# 拾取蓝钥匙
-			GameManager.add_key("blue")
-			set_tile(new_position, TileType.FLOOR)
-			print("获得蓝钥匙！")
-			
-		TileType.KEY_RED:
-			# 拾取红钥匙
-			GameManager.add_key("red")
-			set_tile(new_position, TileType.FLOOR)
-			print("获得红钥匙！")
+		TileType.KEY_YELLOW, TileType.KEY_BLUE, TileType.KEY_RED:
+			# 钥匙拾取现在由GameWorld的物品系统处理
+			# 这里只允许移动，不直接处理拾取
+			pass
 			
 		TileType.NPC:
 			# 与NPC对话
@@ -348,6 +403,23 @@ func move_player(direction: Vector2i) -> bool:
 	player_moved.emit(old_position, new_position)
 	
 	return true
+
+# 保存当前楼层状态
+func save_current_floor_state() -> void:
+	var current_floor = GameManager.game_progress["current_floor"]
+	if current_floor > 0:
+		floor_states[current_floor] = current_map_data.duplicate(true)
+		print("保存第 " + str(current_floor) + " 层状态")
+
+# 重置指定楼层状态（恢复到初始状态）
+func reset_floor_state(floor_number: int) -> void:
+	if floor_maps.has(floor_number):
+		floor_states[floor_number] = floor_maps[floor_number].duplicate(true)
+		print("重置第 " + str(floor_number) + " 层状态")
+
+# 获取楼层是否已被访问过
+func is_floor_visited(floor_number: int) -> bool:
+	return floor_states.has(floor_number)
 
 # 保存地图数据到文件
 func save_map_to_file(floor_number: int, map_data: Array) -> bool:
@@ -378,3 +450,27 @@ func save_map_to_file(floor_number: int, map_data: Array) -> bool:
 	
 	file.store_string(json_string)
 	return true
+
+# 处理战斗结束
+func _on_battle_ended(result: Dictionary) -> void:
+	print("MapManager收到战斗结果: " + str(result))
+	
+	if result["victory"]:
+		# 战斗胜利，只移除敌人，玩家保持在原位置
+		var enemy_position = find_enemy_position_near_player()
+		if enemy_position != Vector2i(-1, -1):
+			# 移除敌人
+			set_tile(enemy_position, TileType.FLOOR)
+			print("战斗胜利！敌人已被移除，玩家保持在原位置: " + str(player_position))
+	else:
+		# 战斗失败，玩家不移动
+		print("战斗失败！玩家保持在原位置")
+
+# 查找玩家附近的敌人位置
+func find_enemy_position_near_player() -> Vector2i:
+	var directions = [Vector2i(0, 1), Vector2i(1, 0), Vector2i(0, -1), Vector2i(-1, 0)]
+	for dir in directions:
+		var check_pos = player_position + dir
+		if is_valid_position(check_pos) and get_tile(check_pos) == TileType.ENEMY:
+			return check_pos
+	return Vector2i(-1, -1)  # 没有找到敌人

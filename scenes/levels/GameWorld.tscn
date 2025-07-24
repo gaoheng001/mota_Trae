@@ -16,7 +16,8 @@ layer_0/tile_data = PackedInt32Array()
 [node name="Player" parent="." instance=ExtResource("2_lfmqj")]
 position = Vector2(320, 320)
 
-[node name="Camera2D" type="Camera2D" parent="Player"]
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(352, 352)
 current = true
 smooth_enabled = true
 

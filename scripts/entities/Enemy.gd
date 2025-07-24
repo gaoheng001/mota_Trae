@@ -70,6 +70,48 @@ func update_appearance() -> void:
 	var name_label = $NameLabel if has_node("NameLabel") else null
 	if name_label and enemy_data.has("name"):
 		name_label.text = enemy_data["name"]
+	
+	# 创建并显示损失生命值标签
+	create_damage_label()
+
+# 创建损失生命值标签
+func create_damage_label() -> void:
+	# 检查是否已经存在损失生命值标签
+	var existing_label = get_node_or_null("DamageLabel")
+	if existing_label:
+		existing_label.queue_free()
+	
+	# 计算与该敌人战斗的损失生命值
+	var battle_prediction = BattleManager.can_defeat_enemy(enemy_id)
+	
+	# 创建新的标签
+	var damage_label = Label.new()
+	damage_label.name = "DamageLabel"
+	
+	if battle_prediction["can_win"]:
+		# 如果可以战胜，显示损失的生命值
+		damage_label.text = "-" + str(battle_prediction["damage_taken"])
+		damage_label.modulate = Color.YELLOW  # 黄色表示可以战斗
+	else:
+		# 如果无法战胜，显示"???"
+		damage_label.text = "???"
+		damage_label.modulate = Color.RED  # 红色表示无法战斗
+	
+	# 设置标签样式
+	damage_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	damage_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	damage_label.position = Vector2(-20, -40)  # 显示在敌人上方
+	damage_label.size = Vector2(40, 20)
+	
+	# 设置字体大小和样式
+	damage_label.add_theme_font_size_override("font_size", 14)
+	damage_label.add_theme_color_override("font_color", damage_label.modulate)
+	damage_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	damage_label.add_theme_constant_override("shadow_offset_x", 1)
+	damage_label.add_theme_constant_override("shadow_offset_y", 1)
+	
+	# 添加到敌人节点
+	add_child(damage_label)
 
 # 获取敌人属性
 func get_stat(stat_name: String, default_value = 0):
@@ -117,6 +159,11 @@ func _on_click_area_input_event(_viewport, event, _shape_idx) -> void:
 		
 		# 显示敌人信息
 		show_info()
+
+# 更新损失生命值显示（当玩家属性变化时调用）
+func update_damage_display() -> void:
+	if is_initialized:
+		create_damage_label()
 
 # 设置敌人ID并重新加载数据
 func set_enemy_id(new_id: String) -> void:

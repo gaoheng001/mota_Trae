@@ -191,8 +191,8 @@ func simulate_battle() -> Dictionary:
 	# 计算击败敌人所需回合数
 	var turns_to_defeat_enemy = ceil(float(enemy_health) / player_damage_per_turn) if player_damage_per_turn > 0 else 999
 	
-	# 计算玩家受到的总伤害
-	var total_damage_to_player = enemy_damage_per_turn * (turns_to_defeat_enemy - 1) if enemy_damage_per_turn > 0 else 0
+	# 计算玩家受到的总伤害（玩家先手，最后一回合击败敌人时敌人不会攻击）
+	var total_damage_to_player = enemy_damage_per_turn * (turns_to_defeat_enemy - 1) if enemy_damage_per_turn > 0 and turns_to_defeat_enemy > 0 else 0
 	
 	# 计算战斗后玩家剩余生命值
 	var player_health_after_battle = player_health - total_damage_to_player

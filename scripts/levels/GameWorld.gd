@@ -45,16 +45,26 @@ func _ready() -> void:
 	npcs.name = "NPCs"
 	add_child(npcs)
 	
+	# 连接信号和初始化游戏
+	connect_signals_and_init()
+	
 # 节点引用
 @onready var GameManager = get_node("/root/GameManager")
 
-func _ready() -> void:
+# 连接信号和初始化游戏
+func connect_signals_and_init() -> void:
 	GameManager.floor_changed.connect(_on_floor_changed)
 	GameManager.game_state_changed.connect(_on_game_state_changed)
+	GameManager.player_stats_changed.connect(_on_player_stats_changed)
 	MapManager.map_loaded.connect(_on_map_loaded)
 	MapManager.tile_changed.connect(_on_tile_changed)
+	MapManager.player_moved.connect(_on_player_moved)
 	BattleManager.battle_started.connect(_on_battle_started)
 	BattleManager.battle_ended.connect(_on_battle_ended)
+	
+	# 连接玩家交互信号
+	if player:
+		player.interaction_triggered.connect(_on_player_interaction)
 
 	# 初始化UI
 	init_ui()
@@ -82,25 +92,24 @@ func init_ui() -> void:
 
 # 设置相机
 func setup_camera() -> void:
-	if not player:
-		print("警告: 玩家节点未找到")
-		return
-	
-	# 获取相机节点
-	var camera = player.get_node("Camera2D")
+	print("设置相机")
+	# 获取相机节点（现在是GameWorld的直接子节点）
+	var camera = get_node("Camera2D")
 	if not camera:
 		print("警告: Camera2D节点未找到")
 		return
 	
-	print("设置相机缩放")
+	print("设置相机缩放和位置")
 	# 设置相机缩放以适应地图大小
 	# 地图是11x11，瓦片大小64x64，总大小704x704
 	# 屏幕大小1280x720，需要适当缩放
 	camera.zoom = Vector2(0.8, 0.8)  # 缩小以显示更多地图内容
 	camera.enabled = true
-	camera.position_smoothing_enabled = true
-	camera.position_smoothing_speed = 5.0
-	print("相机设置完成")
+	# 将相机固定在地图中心 (11x11地图，中心位置是(5,5)，世界坐标是352,352)
+	camera.position = Vector2(352, 352)
+	# 禁用平滑移动，因为相机现在是固定的
+	camera.position_smoothing_enabled = false
+	print("相机设置完成 - 固定在地图中心")
 
 # 加载当前楼层
 func load_current_floor() -> void:
@@ -247,12 +256,13 @@ func get_random_item_id(floor_number: int) -> String:
 	# 根据楼层选择合适的物品
 	var item_pool = []
 	
-	# 基础物品（所有楼层都可能出现）
-	var base_items = ["yellow_key", "blue_key", "small_health_potion"]
+	# 基础物品（所有楼层都可能出现）- 增加生命药水的权重
+	var base_items = ["yellow_key", "blue_key", "small_health_potion", "small_health_potion", "small_health_potion"]
 	
 	# 根据楼层添加不同物品
 	if floor_number >= 3:
 		base_items.append("medium_health_potion")
+		base_items.append("medium_health_potion")  # 增加权重
 		base_items.append("attack_potion")
 	
 	if floor_number >= 5:
@@ -262,6 +272,7 @@ func get_random_item_id(floor_number: int) -> String:
 	
 	if floor_number >= 10:
 		base_items.append("large_health_potion")
+		base_items.append("large_health_potion")  # 增加权重
 		base_items.append("iron_shield")
 	
 	if floor_number >= 15:
@@ -279,6 +290,7 @@ func get_random_item_id(floor_number: int) -> String:
 	rng.seed = floor_number * 2000 + Time.get_unix_time_from_system()
 	var index = rng.randi() % base_items.size()
 	
+	print("楼层 " + str(floor_number) + " 生成物品: " + base_items[index])
 	return base_items[index]
 
 # 清除地图元素
@@ -408,6 +420,13 @@ func _on_game_state_changed(new_state) -> void:
 			# 游戏结束
 			show_game_over()
 
+# 玩家属性变化处理
+func _on_player_stats_changed(player_data: Dictionary) -> void:
+	# 更新所有敌人的损失生命值显示
+	for enemy in enemies.get_children():
+		if enemy.has_method("update_damage_display"):
+			enemy.update_damage_display()
+
 # 战斗开始处理
 func _on_battle_started(enemy_data: Dictionary) -> void:
 	print("战斗开始: " + enemy_data["name"])
@@ -529,6 +548,77 @@ func create_tileset_texture() -> ImageTexture:
 	var texture = ImageTexture.new()
 	texture.set_image(image)
 	return texture
+
+# 玩家移动处理
+func _on_player_moved(old_position: Vector2i, new_position: Vector2i) -> void:
+	# 自动拾取该位置的物品（包括钥匙）
+	handle_item_pickup(new_position)
+
+# 处理玩家交互
+func _on_player_interaction(interaction_data: Dictionary) -> void:
+	var interaction_type = interaction_data["type"]
+	var position = interaction_data["position"]
+	
+	match interaction_type:
+		"item":
+			# 处理物品拾取
+			handle_item_pickup(position)
+		"npc":
+			# 处理NPC对话
+			handle_npc_interaction(position)
+		_:
+			print("未知的交互类型: " + str(interaction_type))
+
+# 处理物品拾取
+func handle_item_pickup(position: Vector2i) -> void:
+	# 查找该位置的物品
+	var world_position = tilemap.map_to_local(position)
+	var item_to_pickup = null
+	
+	print("检查位置 " + str(position) + " 的物品，世界坐标: " + str(world_position))
+	print("当前物品容器中有 " + str(items.get_child_count()) + " 个物品")
+	
+	# 在物品容器中查找
+	for item in items.get_children():
+		var distance = item.position.distance_to(world_position)
+		print("物品 " + item.item_id + " 位置: " + str(item.position) + "，距离: " + str(distance))
+		if distance < 32.0:  # 允许一定的误差
+			item_to_pickup = item
+			break
+	
+	if item_to_pickup:
+		print("找到物品: " + item_to_pickup.item_id + "，已使用状态: " + str(item_to_pickup.is_used))
+		# 使用物品
+		if item_to_pickup.use():
+			# 先移除物品实体
+			item_to_pickup.queue_free()
+			# 然后移除地图上的物品瓦片
+			MapManager.set_tile(position, MapManager.TileType.FLOOR)
+			print("成功拾取物品: " + item_to_pickup.item_id)
+		else:
+			print("无法使用物品: " + item_to_pickup.item_id + "（可能已被使用）")
+	else:
+		print("在位置 " + str(position) + " 没有找到物品")
+
+# 处理NPC交互
+func handle_npc_interaction(position: Vector2i) -> void:
+	# 查找该位置的NPC
+	var world_position = tilemap.map_to_local(position)
+	var npc_to_interact = null
+	
+	# 在NPC容器中查找
+	for npc in npcs.get_children():
+		if npc.position.distance_to(world_position) < 32.0:  # 允许一定的误差
+			npc_to_interact = npc
+			break
+	
+	if npc_to_interact:
+		# 触发NPC对话
+		print("与NPC交互: " + str(npc_to_interact.npc_id))
+		# 这里应该调用对话系统
+		# DialogManager.start_dialog(npc_to_interact.npc_id)
+	else:
+		print("在位置 " + str(position) + " 没有找到NPC")
 
 # 显示游戏结束
 func show_game_over() -> void:

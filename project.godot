@@ -13,7 +13,7 @@ config_version=5
 config/name="魔塔游戏"
 config/description="基于Godot 4.4开发的经典魔塔游戏"
 run/main_scene="res://scenes/levels/GameWorld.tscn"
-config/features=PackedStringArray("4.4")
+config/features=PackedStringArray("4.3")
 config/icon="res://icon.svg"
 
 [autoload]

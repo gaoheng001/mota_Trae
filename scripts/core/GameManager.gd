@@ -131,18 +131,21 @@ func update_player_stat(stat_name: String, value) -> void:
 # 增加玩家属性值
 func add_player_stat(stat_name: String, amount) -> void:
 	if player_data.has(stat_name):
+		var old_value = player_data[stat_name]
 		player_data[stat_name] += amount
+		print("属性变化: " + stat_name + " 从 " + str(old_value) + " 增加到 " + str(player_data[stat_name]))
 		player_stats_changed.emit(player_data)
 
 # 减少玩家属性值
-func reduce_player_stat(stat_name: String, amount) -> bool:# 减少玩家属性值
 func reduce_player_stat(stat_name: String, amount) -> bool:
 	if player_data.has(stat_name):
 		if player_data[stat_name] >= amount:
 			player_data[stat_name] -= amount
 			player_stats_changed.emit(player_data)
 			return true
-	return false 检查玩家是否有足够的钥匙
+	return false
+
+# 检查玩家是否有足够的钥匙
 func has_key(key_type: String) -> bool:
 	var key_name = key_type + "_keys"
 	if player_data.has(key_name):

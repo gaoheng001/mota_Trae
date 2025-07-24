@@ -1,4 +1,14 @@
-[gd_resource type="FontFile" format=3 uid="uid://c8kqhpixj5qv"]
+[gd_resource type="SystemFont" format=3 uid="uid://c8kqhpixj5qv"]
 
 [resource]
-fallbacks = Array[Font]([])
+font_names = PackedStringArray("Arial", "Microsoft YaHei", "SimHei", "sans-serif")
+font_style = 0
+font_weight = 400
+font_stretch = 100
+antialiasing = 1
+generate_mipmaps = false
+allow_system_fallback = true
+force_autohinter = false
+hinting = 1
+subpixel_positioning = 1
+oversampling = 0.0

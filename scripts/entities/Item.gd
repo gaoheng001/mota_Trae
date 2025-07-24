@@ -22,13 +22,16 @@ var item_data: Dictionary = {}
 # 是否已初始化
 var is_initialized: bool = false
 
+# 是否已被使用（防止重复拾取）
+var is_used: bool = false
+
 # 信号
 signal item_clicked(item)
 signal item_collected(item)
 
 # 创建简单纹理
 func create_simple_texture() -> void:
-	# 创建一个简单的物品纹理（绿色方块代表物品）
+	# 创建一个默认的物品纹理（绿色方块代表物品）
 	var image = Image.create(64, 64, false, Image.FORMAT_RGB8)
 	image.fill(Color(0.2, 1.0, 0.2))  # 绿色
 	
@@ -63,6 +66,13 @@ func load_item_data() -> void:
 	if item_data.is_empty():
 		push_error("无法加载物品数据: " + item_id)
 		return
+	
+	# 设置物品类型
+	if item_data.has("type"):
+		item_type = item_data["type"]
+		print("物品 " + item_id + " 类型设置为: " + str(item_type))
+	else:
+		print("警告: 物品 " + item_id + " 没有类型信息")
 	
 	# 更新物品显示
 	update_appearance()
@@ -223,9 +233,247 @@ func update_appearance() -> void:
 	# 更新物品精灵
 	var sprite = $Sprite2D if has_node("Sprite2D") else null
 	if sprite:
-		# 这里应该根据物品ID加载对应的纹理
-		# 例如：sprite.texture = load("res://assets/sprites/items/" + item_id + ".png")
-		pass
+		# 根据物品ID创建对应的纹理
+		var texture = create_item_texture(item_id)
+		if texture:
+			sprite.texture = texture
+
+# 根据物品ID创建纹理
+func create_item_texture(id: String) -> ImageTexture:
+	var image = Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	var main_color: Color
+	var border_color: Color
+	var shape_type: String = "square"  # square, circle, diamond
+	
+	# 根据物品ID设置颜色和形状
+	match id:
+		# 钥匙 - 钥匙形状，不同颜色
+		"yellow_key":
+			main_color = Color(1.0, 0.843, 0.0, 1.0)  # 黄色
+			border_color = Color(0.722, 0.525, 0.043, 1.0)  # 深黄色
+			shape_type = "key"
+		"blue_key":
+			main_color = Color(0.255, 0.412, 0.882, 1.0)  # 蓝色
+			border_color = Color(0.098, 0.098, 0.439, 1.0)  # 深蓝色
+			shape_type = "key"
+		"red_key":
+			main_color = Color(0.863, 0.078, 0.235, 1.0)  # 红色
+			border_color = Color(0.545, 0.0, 0.0, 1.0)  # 深红色
+			shape_type = "key"
+		
+		# 药水 - 圆形瓶子，不同颜色
+		"small_health_potion", "medium_health_potion", "large_health_potion":
+			main_color = Color(1.0, 0.0, 0.0, 1.0)  # 红色（生命药水）
+			border_color = Color(0.5, 0.0, 0.0, 1.0)  # 深红色
+			shape_type = "potion"
+		"attack_potion":
+			main_color = Color(1.0, 0.5, 0.0, 1.0)  # 橙色（攻击药水）
+			border_color = Color(0.5, 0.25, 0.0, 1.0)  # 深橙色
+			shape_type = "potion"
+		"defense_potion":
+			main_color = Color(0.0, 0.0, 1.0, 1.0)  # 蓝色（防御药水）
+			border_color = Color(0.0, 0.0, 0.5, 1.0)  # 深蓝色
+			shape_type = "potion"
+		
+		# 装备 - 菱形，金属色
+		"iron_sword", "steel_sword":
+			main_color = Color(0.75, 0.75, 0.75, 1.0)  # 银色
+			border_color = Color(0.4, 0.4, 0.4, 1.0)  # 深灰色
+			shape_type = "diamond"
+		"iron_shield", "steel_shield":
+			main_color = Color(0.6, 0.4, 0.2, 1.0)  # 棕色
+			border_color = Color(0.3, 0.2, 0.1, 1.0)  # 深棕色
+			shape_type = "diamond"
+		
+		# 宝物 - 圆形，金色
+		"gold_coin":
+			main_color = Color(1.0, 0.843, 0.0, 1.0)  # 金色
+			border_color = Color(0.722, 0.525, 0.043, 1.0)  # 深金色
+			shape_type = "circle"
+		"gem":
+			main_color = Color(0.5, 0.0, 0.5, 1.0)  # 紫色
+			border_color = Color(0.25, 0.0, 0.25, 1.0)  # 深紫色
+			shape_type = "diamond"
+		
+		# 特殊物品 - 特殊形状
+		"cross":
+			main_color = Color(1.0, 1.0, 1.0, 1.0)  # 白色
+			border_color = Color(0.5, 0.5, 0.5, 1.0)  # 灰色
+			shape_type = "cross"
+		"flying_shoes":
+			main_color = Color(0.5, 0.25, 0.0, 1.0)  # 棕色
+			border_color = Color(0.25, 0.125, 0.0, 1.0)  # 深棕色
+			shape_type = "square"
+		
+		_:
+			# 默认物品
+			main_color = Color(0.2, 1.0, 0.2, 1.0)  # 绿色
+			border_color = Color(0.1, 0.5, 0.1, 1.0)  # 深绿色
+			shape_type = "square"
+	
+	# 根据形状类型绘制
+	match shape_type:
+		"key":
+			draw_key_shape(image, main_color, border_color)
+		"potion":
+			draw_potion_shape(image, main_color, border_color)
+		"circle":
+			draw_circle_shape(image, main_color, border_color)
+		"diamond":
+			draw_diamond_shape(image, main_color, border_color)
+		"cross":
+			draw_cross_shape(image, main_color, border_color)
+		_:
+			draw_square_shape(image, main_color, border_color)
+	
+	# 创建纹理
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	return texture
+
+# 绘制钥匙形状
+func draw_key_shape(image: Image, main_color: Color, border_color: Color) -> void:
+	image.fill(Color(0, 0, 0, 0))  # 透明背景
+	
+	# 钥匙头部（圆形）
+	var center_x = 32
+	var center_y = 20
+	var radius = 12
+	
+	for x in range(64):
+		for y in range(64):
+			var dx = x - center_x
+			var dy = y - center_y
+			var distance = sqrt(dx * dx + dy * dy)
+			
+			# 钥匙头部圆形
+			if distance <= radius:
+				if distance >= radius - 2:
+					image.set_pixel(x, y, border_color)
+				else:
+					image.set_pixel(x, y, main_color)
+			
+			# 钥匙柄部（矩形）
+			if x >= 28 and x <= 36 and y >= 32 and y <= 52:
+				if x == 28 or x == 36 or y == 32 or y == 52:
+					image.set_pixel(x, y, border_color)
+				else:
+					image.set_pixel(x, y, main_color)
+			
+			# 钥匙齿部
+			if x >= 36 and x <= 44 and y >= 44 and y <= 48:
+				if x == 36 or x == 44 or y == 44 or y == 48:
+					image.set_pixel(x, y, border_color)
+				else:
+					image.set_pixel(x, y, main_color)
+
+# 绘制药水瓶形状
+func draw_potion_shape(image: Image, main_color: Color, border_color: Color) -> void:
+	image.fill(Color(0, 0, 0, 0))  # 透明背景
+	
+	# 瓶身（椭圆形）
+	var center_x = 32
+	var center_y = 40
+	var width = 20
+	var height = 24
+	
+	for x in range(64):
+		for y in range(64):
+			var dx = float(x - center_x) / width
+			var dy = float(y - center_y) / height
+			var distance = sqrt(dx * dx + dy * dy)
+			
+			# 瓶身
+			if distance <= 1.0:
+				if distance >= 0.85:
+					image.set_pixel(x, y, border_color)
+				else:
+					image.set_pixel(x, y, main_color)
+			
+			# 瓶颈
+			if x >= 28 and x <= 36 and y >= 16 and y <= 24:
+				if x == 28 or x == 36 or y == 16:
+					image.set_pixel(x, y, border_color)
+				else:
+					image.set_pixel(x, y, main_color)
+			
+			# 瓶口
+			if x >= 26 and x <= 38 and y >= 12 and y <= 16:
+				if y == 12 or y == 16:
+					image.set_pixel(x, y, border_color)
+				else:
+					image.set_pixel(x, y, main_color)
+
+# 绘制圆形
+func draw_circle_shape(image: Image, main_color: Color, border_color: Color) -> void:
+	image.fill(Color(0, 0, 0, 0))  # 透明背景
+	
+	var center_x = 32
+	var center_y = 32
+	var radius = 24
+	
+	for x in range(64):
+		for y in range(64):
+			var dx = x - center_x
+			var dy = y - center_y
+			var distance = sqrt(dx * dx + dy * dy)
+			
+			if distance <= radius:
+				if distance >= radius - 2:
+					image.set_pixel(x, y, border_color)
+				else:
+					image.set_pixel(x, y, main_color)
+
+# 绘制菱形
+func draw_diamond_shape(image: Image, main_color: Color, border_color: Color) -> void:
+	image.fill(Color(0, 0, 0, 0))  # 透明背景
+	
+	var center_x = 32
+	var center_y = 32
+	var size = 24
+	
+	for x in range(64):
+		for y in range(64):
+			var dx = abs(x - center_x)
+			var dy = abs(y - center_y)
+			var distance = dx + dy
+			
+			if distance <= size:
+				if distance >= size - 2:
+					image.set_pixel(x, y, border_color)
+				else:
+					image.set_pixel(x, y, main_color)
+
+# 绘制十字形
+func draw_cross_shape(image: Image, main_color: Color, border_color: Color) -> void:
+	image.fill(Color(0, 0, 0, 0))  # 透明背景
+	
+	# 垂直线
+	for x in range(26, 39):
+		for y in range(8, 57):
+			if x == 26 or x == 38:
+				image.set_pixel(x, y, border_color)
+			else:
+				image.set_pixel(x, y, main_color)
+	
+	# 水平线
+	for x in range(8, 57):
+		for y in range(26, 39):
+			if y == 26 or y == 38:
+				image.set_pixel(x, y, border_color)
+			else:
+				image.set_pixel(x, y, main_color)
+
+# 绘制方形
+func draw_square_shape(image: Image, main_color: Color, border_color: Color) -> void:
+	image.fill(Color(0, 0, 0, 0))  # 透明背景
+	
+	for x in range(8, 57):
+		for y in range(8, 57):
+			if x < 10 or x >= 55 or y < 10 or y >= 55:
+				image.set_pixel(x, y, border_color)
+			else:
+				image.set_pixel(x, y, main_color)
 
 # 获取物品属性
 func get_property(property_name: String, default_value = null):
@@ -235,8 +483,11 @@ func get_property(property_name: String, default_value = null):
 
 # 使用物品
 func use() -> bool:
-	if not is_initialized:
+	if not is_initialized or is_used:
 		return false
+	
+	# 标记为已使用，防止重复拾取
+	is_used = true
 	
 	# 根据物品类型执行不同的效果
 	match item_type:
@@ -269,24 +520,25 @@ func use_key() -> bool:
 
 # 使用药水
 func use_potion() -> bool:
+	print("开始使用药水: " + item_id)
 	if not item_data.has("effect"):
+		print("药水没有effect数据")
 		return false
+	
+	print("药水effect数据: " + str(item_data["effect"]))
 	
 	# 应用药水效果
 	for stat_name in item_data["effect"]:
-		if stat_name == "health":
-			# 对于生命值，需要确保不超过最大值
-			var current_health = GameManager.player_data["health"]
-			var max_health = GameManager.player_data["max_health"]
-			var new_health = min(current_health + item_data["effect"][stat_name], max_health)
-			GameManager.update_player_stat("health", new_health)
-		else:
-			# 对于其他属性，直接增加
-			GameManager.add_player_stat(stat_name, item_data["effect"][stat_name])
+		var effect_value = item_data["effect"][stat_name]
+		print("应用药水效果: " + stat_name + " +" + str(effect_value))
+		
+		# 对于所有属性，直接增加（移除生命值上限限制）
+		GameManager.add_player_stat(stat_name, effect_value)
 	
 	# 发送物品收集信号
 	item_collected.emit(self)
 	
+	print("药水使用完成: " + item_id)
 	return true
 
 # 装备物品
